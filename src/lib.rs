@@ -1,6 +1,8 @@
 #![deny(missing_docs)]
 //! Rust function to permute a numeric range.
 
+use feistel_permutation_rs::{DefaultBuildHasher, Permutation};
+
 /// Creates a function that permutes integers in the range `0..(size-1)`.
 /// When the input is in the range, the permutation function returns
 /// `Ok(i)` for some `i` in the range. Otherwise, the permutation function
@@ -16,12 +18,12 @@
 /// assert!(perm(10).is_err());
 /// ```
 pub fn create(size: u64) -> impl Fn(u64) -> Result<u64, &'static str> {
+    let perm = Permutation::new(size, 29, DefaultBuildHasher::new());
     move |n| {
         if n >= size {
             Err("out of range")
         } else {
-            // TODO: replace this identity function with a FPE such as a Feistel network
-            Ok(n)
+            Ok(perm.get(n))
         }
     }
 }
@@ -38,6 +40,7 @@ mod tests {
         let mut results = HashSet::new();
         for i in 0..n {
             let p = perm(i).unwrap();
+            assert!(p < n);
             results.insert(p);
         }
         assert_eq!(results.len(), n as usize);
