@@ -10,15 +10,15 @@ use feistel_permutation_rs::{DefaultBuildHasher, Permutation};
 /// # Example
 /// ```
 /// use range_permutation::create;
-/// let perm = create(10);
+/// let perm = create(10, 63);
 /// for i in 0..9 {
 ///   let p = perm(i).unwrap();
 ///   assert!(0 <= p && p <= 9);
 /// }
 /// assert!(perm(10).is_err());
 /// ```
-pub fn create(size: u64) -> impl Fn(u64) -> Result<u64, &'static str> {
-    let perm = Permutation::new(size, 29, DefaultBuildHasher::new());
+pub fn create(size: u64, seed: u64) -> impl Fn(u64) -> Result<u64, &'static str> {
+    let perm = Permutation::new(size, seed, DefaultBuildHasher::new());
     move |n| {
         if n >= size {
             Err("out of range")
@@ -36,7 +36,7 @@ mod tests {
     #[test]
     fn is_permutation() {
         let n : u64 = 1000;
-        let perm = create(n);
+        let perm = create(n, 29);
         let mut results = HashSet::new();
         for i in 0..n {
             let p = perm(i).unwrap();
@@ -48,7 +48,7 @@ mod tests {
 
     #[test]
     fn checks_range() {
-        let perm = create(1);
+        let perm = create(1, 45);
         assert!(perm(0).is_ok());
         assert!(perm(1).is_err())
     }
